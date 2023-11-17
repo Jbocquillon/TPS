@@ -1,0 +1,40 @@
+version: '3'
+services:
+  socket-server:
+    image: python-socket-server
+    ports:
+      - 8888:8888
+    volumes:
+      - ./server/server.py:/app/server.py
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8888
+    stdin_open: true
+    tty: true
+  socket-proxy:
+    image: python-socket-proxy
+    ports:
+      - 10999:10999
+    volumes:
+      - ./proxy/proxy.py:/app/proxy.py
+    environment:
+      - PROXY_HOST=0.0.0.0
+      - PROXY_PORT=10999
+      - SERVER_HOST=socket-server
+      - SERVER_PORT=8888
+    depends_on:
+      - socket-server
+    stdin_open: true
+    tty: true
+  socket-client:
+    image: python-socket-client
+    volumes:
+      - ./client/client.py:/app/client.py
+    environment:
+      - PROXY_HOST=socket-proxy
+      - PROXY_PORT=10999
+    depends_on:
+      - socket-proxy
+    stdin_open: true
+    tty: true
+
